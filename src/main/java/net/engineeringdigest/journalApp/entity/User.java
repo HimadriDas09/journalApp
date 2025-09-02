@@ -35,4 +35,7 @@ public class User {
     // journalEntries: [DBRef("journal_entries", ObjectId("...........")), DBRef("journal_entries", ObjectId("......")), ]
 
     // DBRef(lazy = "true") -> to lazily
+
+    // NOTE: we will maintain List<String> to store roles of a User : to know what is he authorized to do
+    private List<String> roles;
 }

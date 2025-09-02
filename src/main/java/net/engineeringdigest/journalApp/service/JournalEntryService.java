@@ -22,21 +22,17 @@ public class JournalEntryService {
     UserService userService;
 
     @Transactional
-    public boolean saveEntry(JournalEntry journalEntry, String username){
+    public void saveEntry(JournalEntry journalEntry, String username){
         journalEntry.setDate(LocalDateTime.now());
 
-        User user = userService.findByUsername(username);
+        User user = userService.findByUsername(username); // authenticated user + present in db (password hashed)
 
-        if(user != null) {
-            JournalEntry saved = journalEntryRepository.save(journalEntry); // IMP to first save journalEntry bcz then only we can save it's id in journalEntries of user.
+        JournalEntry saved = journalEntryRepository.save(journalEntry); // IMP to first save journalEntry bcz then only we can save its id in journalEntries[] of user.
 
-            user.getJournalEntries().add(saved);
-            user.setUsername(null); // explicitly throwing exception.
-            userService.saveEntry(user);
+        user.getJournalEntries().add(saved);
 
-            return true;
-        }
-        return false;
+        userService.saveEntry(user);
+
     }
 
     public void saveEntry(JournalEntry journalEntry){
@@ -53,14 +49,22 @@ public class JournalEntryService {
         return journalEntryRepository.findById(id);
     }
 
-    public void deleteById(ObjectId id, String username){
-        User user = userService.findByUsername(username);
+    // Transactional: means all the operations will be treated as a single operation, if any error occurs in between, then we roll back to the prev state (before any operation was performed)
+    @Transactional
+    public boolean deleteById(ObjectId id, String username){
+        boolean removed = false;
+        try {
+            User user = userService.findByUsername(username);
+            removed = user.getJournalEntries().removeIf(x -> x.getId().equals(id));
 
-        if(user != null){
-            user.getJournalEntries().removeIf(x -> x.getId().equals(id));
-            userService.saveEntry(user);
+            if(removed){
+                userService.saveEntry(user);
+                journalEntryRepository.deleteById(id);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new RuntimeException("An error occured while deleting the entry : " + e);
         }
-
-        journalEntryRepository.deleteById(id);
+        return removed;
     }
 }
