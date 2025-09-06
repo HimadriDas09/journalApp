@@ -30,6 +30,7 @@ public class SpringSecurity {
         return httpSecurity.authorizeHttpRequests(req -> req
                 .requestMatchers("/public/**").permitAll()
                 .requestMatchers("/journal/**", "/user/**").authenticated() // ** means >=1 characters
+                .requestMatchers("/admin/**").hasRole("ADMIN") // /admin apis will get authenticated by users whose role is ADMIN
                 .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults()) // enable HTTP Basic Authentication i.e Authorization: Basic<Base64 encoded string>
                 .csrf(AbstractHttpConfigurer::disable)

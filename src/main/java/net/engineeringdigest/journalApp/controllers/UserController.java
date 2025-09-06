@@ -21,10 +21,10 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @GetMapping
-    public List<User> getAllUsers(){
-        return userService.getAll();
-    }
+//    @GetMapping
+//    public List<User> getAllUsers(){
+//        return userService.getAll();
+//    }
 
     @PostMapping
     public void createUser(@RequestBody User user){
